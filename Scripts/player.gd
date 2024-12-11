@@ -196,10 +196,10 @@ func wall_slide():
 	
 	# Wall jump conditions
 	if Input.is_action_just_pressed("jump"):
-		if not is_on_floor():
-			wall_jump()
-		else: 
-			change_state(States.JUMP)
+		#if not is_on_floor():
+		wall_jump()
+		#else: 
+			#change_state(States.JUMP)
 	
 	if input.y == 0 and (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
 		change_state(States.RUN)
@@ -219,10 +219,10 @@ func wall_climb():
 	
 	# Wall jump conditions
 	if Input.is_action_just_pressed("jump"):
-		if not is_on_floor():
+		#if not is_on_floor():
 			wall_jump()
-		else: 
-			change_state(States.JUMP)
+		#else: 
+			#change_state(States.JUMP)
 	
 	if velocity.y > 0 and !Input.is_action_pressed("ui_down"):
 		change_state(States.WALL_SLIDE)
@@ -250,7 +250,6 @@ func check_wall_contact():
 			wall_direction = 0
 			#if not is_on_floor():
 				#change_state(States.FALL)
-
 
 func wall_jump():
 	if test_move(transform, Vector2(1, 0)):
