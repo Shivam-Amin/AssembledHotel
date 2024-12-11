@@ -32,6 +32,9 @@ var coyote_jump_enabled: bool = false
 
 ## WALL:
 var wall_direction: int = 0  # 1 for right wall, -1 for left wall
+var was_on_wall: bool = false
+@onready var wall_detect_1 = $WallDetect/WallDetect1
+@onready var wall_detect_2 = $WallDetect/WallDetect2
 
 @export var WALL_SLIDE_SPEED: float = 80
 @export var WALL_JUMP_VELOCITY_X: float = 80
@@ -94,9 +97,10 @@ func player_input():
 
 func default_checks():
 	was_on_floor = true if is_on_floor() else false
+	was_on_wall = true if (wall_detect_1.is_colliding() or wall_detect_2.is_colliding()) else false
 	
 	#if not is_on_floor() or (is_on_floor() and input.y != 0):
-	check_wall_contact()
+	#check_wall_contact()
 
 
 ## =========== STATES =============
@@ -111,6 +115,8 @@ func idel():
 		change_state(States.RUN)
 	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
 		change_state(States.JUMP)
+	if wall_detect_1.is_colliding() or wall_detect_2.is_colliding():
+		change_state(States.WALL_SLIDE)
 
 ## RUN
 func run():
@@ -130,6 +136,8 @@ func run():
 		#change_state(States.FALL)
 	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
 		change_state(States.JUMP)
+	if wall_detect_1.is_colliding() or wall_detect_2.is_colliding():
+		change_state(States.WALL_SLIDE)
 
 ## JUMP
 func can_jump():
@@ -155,6 +163,8 @@ func jump():
 		change_state(States.IDLE)
 	if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
 		change_state(States.RUN)
+	if wall_detect_1.is_colliding() or wall_detect_2.is_colliding():
+		change_state(States.WALL_SLIDE)
 	
 	# Always check for fall state when in jump state
 	if velocity.y >= 0 or (not is_on_floor() and not is_on_wall()):
@@ -168,13 +178,16 @@ func fall():
 		change_state(States.JUMP)
 	if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
 		change_state(States.RUN)
+	if wall_detect_1.is_colliding() or wall_detect_2.is_colliding():
+		change_state(States.WALL_SLIDE)
 
 ## WALL
 func wall_slide():
 	# Slow down vertical movement
 	velocity.y = min(velocity.y, WALL_SLIDE_SPEED)
 	
-	if !is_on_wall():
+	if was_on_wall and (!wall_detect_1.is_colliding() or !wall_detect_2.is_colliding()):
+		print('JABBAAAAA SLIDE')
 		change_state(States.FALL)
 	
 	# Wall climb up or down
@@ -183,7 +196,10 @@ func wall_slide():
 	
 	# Wall jump conditions
 	if Input.is_action_just_pressed("jump"):
-		wall_jump()
+		if not is_on_floor():
+			wall_jump()
+		else: 
+			change_state(States.JUMP)
 	
 	if input.y == 0 and (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
 		change_state(States.RUN)
@@ -193,7 +209,8 @@ func wall_climb():
 	# Slow vertical movement while climbing
 	velocity.y = input.y * (WALL_SLIDE_SPEED * 0.5)
 	
-	if !is_on_wall():
+	if was_on_wall and (!wall_detect_1.is_colliding() or !wall_detect_2.is_colliding()):
+		print('JABBAAAAA CLIMB')
 		change_state(States.FALL)
 	
 	# Return to wall slide if no input
@@ -202,7 +219,13 @@ func wall_climb():
 	
 	# Wall jump conditions
 	if Input.is_action_just_pressed("jump"):
-		wall_jump()
+		if not is_on_floor():
+			wall_jump()
+		else: 
+			change_state(States.JUMP)
+	
+	if velocity.y > 0 and !Input.is_action_pressed("ui_down"):
+		change_state(States.WALL_SLIDE)
 
 ## WALL MECHANICS
 func check_wall_contact():
@@ -230,14 +253,20 @@ func check_wall_contact():
 
 
 func wall_jump():
+	if test_move(transform, Vector2(1, 0)):
+		wall_direction = 1  # Right wall
+	elif test_move(transform, Vector2(-1, 0)):
+		wall_direction = -1  # Left wall
+	else:
+		wall_direction = 0
+	
 	# Reset jump count
 	jump_count = max_jump - 1
-	print(jump_count)
 	
 	# Wall jump based on wall direction
 	if wall_direction == 1:  # Right wall
 		velocity.x = -WALL_JUMP_VELOCITY_X
-	else:  # Left wall
+	elif wall_direction == -1:  # Left wall
 		velocity.x = WALL_JUMP_VELOCITY_X
 	
 	# Vertical jump velocity

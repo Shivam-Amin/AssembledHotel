@@ -147,10 +147,10 @@ script = ExtResource("1_jeuuc")
 sprite_frames = SubResource("SpriteFrames_g8t06")
 animation = &"idel"
 autoplay = "idel"
-frame_progress = 0.402878
+frame_progress = 0.557897
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(0.5, 0.5)
+position = Vector2(0, 0.5)
 shape = SubResource("RectangleShape2D_0tv0s")
 
 [node name="Camera2D" type="Camera2D" parent="."]
@@ -175,11 +175,11 @@ position = Vector2(0, -4)
 
 [node name="WallDetect1" type="RayCast2D" parent="WallDetect"]
 position = Vector2(0, 10)
-target_position = Vector2(7, 0)
+target_position = Vector2(10, 0)
 
 [node name="WallDetect2" type="RayCast2D" parent="WallDetect"]
 position = Vector2(0, 10)
-target_position = Vector2(-6, 0)
+target_position = Vector2(-9, 0)
 
 [node name="WallArea" type="Area2D" parent="WallDetect"]
 
