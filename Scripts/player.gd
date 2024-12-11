@@ -1,21 +1,44 @@
 class_name Player
 extends CharacterBody2D
 
-#Dependencies
-#@onready var ground_ray: RayCast2D = $ground_ray
+@onready var label = $Label
+@onready var input = Vector2.ZERO
+var direction = 0
+var was_on_floor: bool = true   # to detect if player just slide out of floor at the and of move and slide.
 
 ## MOVEMENT SECTION
 
 #setup Variables
 @export var MAX_SPEED: int = 150
 @export var acceleration: float = 20
+@export var friction: float = 0.1
 
 ## JUMP SECTION:
 @export var max_jump: int = 2
 var jump_count : int = max_jump
+var jump_pressed: bool = false
+
+# variable jump
+# min jump
+@onready var min_jump_timer = $Timer/MinJumpTimer
+
+# jump buffer
+@onready var jump_buffer_timer: Timer = $Timer/JumpBufferTimer
+var buffered_jump_enabled: bool = false
+
+# coyote jump buffer
+@onready var coyote_jump_timer = $Timer/CoyoteJumpTimer
+var coyote_jump_enabled: bool = false
+
+## WALL:
+var wall_direction: int = 0  # 1 for right wall, -1 for left wall
+
+@export var WALL_SLIDE_SPEED: float = 80
+@export var WALL_JUMP_VELOCITY_X: float = 80
+@export var WALL_JUMP_VELOCITY_Y: float = -260
 
 # setup Veriables
-@export var jump_height: float = 50
+@export var jump_height: float = 40
 @export var jump_time_to_peak: float = 0.3
 @export var jump_time_to_decent: float = 0.3
 
@@ -24,345 +47,226 @@ var jump_count : int = max_jump
 @onready var jump_gravity: float = ((-2.0 * jump_height) / (jump_time_to_peak * jump_time_to_peak)) * -1
 @onready var fall_gravity: float = ((-2.0 * jump_height) / (jump_time_to_decent * jump_time_to_decent)) * -1 
 
-# variable jump
-@onready var jump_height_timer: Timer = $Timer/JumpHeightTimer
-
-## Wall movement:
-@onready var wall_detect_1 = $WallDetect/WallDetect1
-@onready var wall_detect_2 = $WallDetect/WallDetect2
-
-# Wall detection
-@onready var on_wall: bool = false
-@onready var walling_area: bool = false
-# wall climb speed
-const wall_climb_speed = 170
-
-# wall jump
-const wall_jump_pushback = 400
-var jump_pressed = false
-
-# wall sliding 
-const wall_slide_gravity = 30
-#var is_wall_sliding: bool = false
-
-# jump buffer
-@onready var jump_buffer_timer: Timer = $Timer/JumpbufferTimer
-var jump_buffered: bool = false
-
-# coyote timer
-@onready var coyote_time: Timer = $Timer/CoyoteTimer
-var can_coyote_jump: bool = false
 
 
-var input: Vector2 = Vector2.ZERO
-
-enum States  {IDLE, RUNNING, JUMPPING, WALLING}
+enum States  {IDLE, RUN, JUMP, FALL, WALL_SLIDE, WALL_CLIMB}
 
 var state = States.IDLE
 
-func _physics_process(delta: float) -> void:
-	if not on_wall:
-		applay_gravity(delta)
-	
+
+func _physics_process(delta):
 	match state:
 		States.IDLE:
-			idle()
-		States.RUNNING:
-			running()
-		States.JUMPPING:
-			JUMPPING()
-		States.WALLING:
-			WALLING()
+			label.text = "IDEL"
+			idel()
+		States.RUN:
+			label.text = "RUN"
+			run()
+		States.JUMP:
+			label.text = "JUMP"
+			jump()
+		States.FALL:
+			label.text = "FALL"
+			fall()
+		States.WALL_SLIDE:
+			label.text = "WALL_SLIDE"
+			wall_slide()
+		States.WALL_CLIMB:
+			label.text = "WALL_CLIMB"
+			wall_climb()
 	
-	
-	wall_slide(delta)
-	
-	var was_on_floor = is_on_floor()
-	var was_on_wall = detected_wall()
+	apply_gravity(delta)
+	default_checks()
+	player_input()
 	
 	move_and_slide()
-	
-	# NOTE: velocity.y is > 0 i.e. player has not started jumping but gravity applied.
-	if was_on_floor and not is_on_floor() and velocity.y >= 0:
-		can_coyote_jump = true
-		coyote_time.start()
-	
-	#if not was_on_floor and is_on_floor():
-		## NOTE: Perform BUFFER JUMP
-		#if jump_buffered:
-			#jump_buffered = false
-			#change_state(States.JUMPPING)
-	
-	#print(not detected_wall(), was_on_wall)
-		
-	#if was_on_wall and not detected_wall():
-		#print('UPPER JAAAA')
-		#velocity.y -= -1000.0
-		#velocity.x -= 1000.0
 
-func change_state(new_state: States):
-	state = new_state
 
-func idle():
-	velocity.x = move_toward(velocity.x, 0.0, acceleration)
-	jump_count = max_jump
+
+## HELPER FUNCTIONS:
+func change_state(newState: States) -> void:
+	state = newState
+
+func player_input():
+	input = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
+	if input.x != 0:
+		direction = input.x
+
+func default_checks():
+	was_on_floor = true if is_on_floor() else false
 	
-	if Input.is_action_just_pressed("jump"):
-		change_state(States.JUMPPING)
+	#if not is_on_floor() or (is_on_floor() and input.y != 0):
+	check_wall_contact()
+
+
+## =========== STATES =============
+## IDEL
+func idel():
+	velocity.x = move_toward(velocity.x, 0, friction)
+	
+	if is_on_floor():
+		jump_count = max_jump
+	
 	if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
-		change_state(States.RUNNING)
-	if detected_wall():
-		change_state(States.WALLING)
+		change_state(States.RUN)
+	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
+		change_state(States.JUMP)
 
-func running():
-	input.x = Input.get_axis("ui_left", "ui_right")
-	input = input.normalized()
-	
+## RUN
+func run():
 	velocity.x = move_toward(velocity.x, MAX_SPEED * input.x, acceleration)
 	
-	if input == Vector2.ZERO:
-		change_state(States.IDLE)
-	if Input.is_action_just_pressed("jump"):
-		change_state(States.JUMPPING)
-	if detected_wall():
-		change_state(States.WALLING)
-
-func JUMPPING():
-	jump_height_timer.start()
-	if can_jump() and not is_on_wall():
-		jump_count -=1
-		velocity.y = jump_velocity
-		
-		if can_coyote_jump:
-			can_coyote_jump = false
-			print("COYOTE JUMP")
-	
-	elif detected_wall():
-		jump_count = max_jump
-		if wall_detect_1.is_colliding():
-			print('lsadfjalskdjfslkj')
-			var new_velocity = Vector2(-wall_jump_pushback, jump_velocity)
-			velocity = new_velocity
-		elif wall_detect_2.is_colliding():
-			var new_velocity = Vector2(wall_jump_pushback, jump_velocity)
-			velocity = new_velocity
-	
-	#else:
-		#if not jump_buffered:
-			#jump_buffered = true
-			#jump_buffer_timer.start()
-			#print("JUMP BUFFER TRUE")
-	
-	
-	if Input.is_action_pressed("jump") and not is_on_floor():
-		if not jump_buffered:
-			print('jsdfkljlkj')
-			jump_pressed = true
-			jump_buffer_timer.start()
-			jump_buffered = true
-	
-	
-	if Input.is_action_just_pressed("ui_left") or Input.is_action_just_pressed("ui_right"):
-		change_state(States.RUNNING)
-	if is_on_floor() and jump_pressed:
-		print('jabbaaa')
-		if not jump_buffer_timer.is_stopped() and jump_count > 0:
-			velocity.y = jump_velocity
-		else:
-			change_state(States.IDLE)
-	if detected_wall():
-		change_state(States.WALLING)
-
-func WALLING():
-	if detected_wall():
-		on_wall = true
-		
-		# wall slide gravity
-		velocity.y += wall_slide_gravity
-		velocity.y = min(velocity.y, wall_slide_gravity)
-		
-		if Input.is_action_pressed("ui_up"):
-			velocity.y = -wall_climb_speed
-		elif Input.is_action_pressed("ui_down"):
-			velocity.y = wall_climb_speed
-		elif Input.is_action_just_pressed("jump"):
-			change_state(States.JUMPPING)
-	else:
-		on_wall = false
-	
-	if Input.is_action_just_pressed("ui_left") or Input.is_action_just_pressed("ui_right"):
-		change_state(States.RUNNING)
 	if is_on_floor():
+		jump_count = max_jump
+	
+	if was_on_floor and not is_on_floor() and velocity.y > 0:
+		coyote_jump_enabled = true
+		coyote_jump_timer.start()
+		## print('FALL')
+	
+	if velocity.x == 0:
 		change_state(States.IDLE)
+	#if velocity.y > 0 and not is_on_floor():
+		#change_state(States.FALL)
+	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
+		change_state(States.JUMP)
 
-func _on_coyote_timer_timeout():
-	can_coyote_jump = false
-
-func _on_jumpbuffer_timer_timeout():
-	jump_pressed = false
-	jump_buffered = false
-
-func _on_jump_height_timer_timeout():
-	if not Input.is_action_pressed("jump"):
-		if velocity.y < -10:
-			velocity.y = -10
-
-func jump():
-	pass
-#func can_wall_slide() -> bool:
-	#if detected_wall() and !is_on_floor():
-		#if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
-			#return true
-		#else: 
-			#return false
-	#return false
-
-func detected_wall():
-	if wall_detect_1.is_colliding() or wall_detect_2.is_colliding():
+## JUMP
+func can_jump():
+	## jump if player is on floor or coyote jump is on going or
+	## have already performed atleast 1 jump 
+	if is_on_floor() or coyote_jump_enabled or (jump_count < max_jump and jump_count > 0):
 		return true
 	return false
+	
+func jump():
+	if can_jump():
+		min_jump_timer.start()
+		jump_count -= 1
+		velocity.y = jump_velocity
+		## if (coyote_jump_enabled): print('COYOTE JUMP')
+	
+	else:
+		if not buffered_jump_enabled:
+			buffered_jump_enabled = true
+			jump_buffer_timer.start()
+	
+	if velocity.x == 0:
+		change_state(States.IDLE)
+	if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
+		change_state(States.RUN)
+	
+	# Always check for fall state when in jump state
+	if velocity.y >= 0 or (not is_on_floor() and not is_on_wall()):
+		change_state(States.FALL)
 
-func wall_slide(delta):
-	pass
+## FALL
+func fall():
+	if is_on_floor():
+		change_state(States.IDLE)
+	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
+		change_state(States.JUMP)
+	if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
+		change_state(States.RUN)
+
+## WALL
+func wall_slide():
+	# Slow down vertical movement
+	velocity.y = min(velocity.y, WALL_SLIDE_SPEED)
+	
+	if !is_on_wall():
+		change_state(States.FALL)
+	
+	# Wall climb up or down
+	if input.y != 0:
+		change_state(States.WALL_CLIMB)
+	
+	# Wall jump conditions
+	if Input.is_action_just_pressed("jump"):
+		wall_jump()
+	
+	if input.y == 0 and (Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right")):
+		change_state(States.RUN)
+
+## WALL CLIMB
+func wall_climb():
+	# Slow vertical movement while climbing
+	velocity.y = input.y * (WALL_SLIDE_SPEED * 0.5)
+	
+	if !is_on_wall():
+		change_state(States.FALL)
+	
+	# Return to wall slide if no input
+	if input.y == 0:
+		change_state(States.WALL_SLIDE)
+	
+	# Wall jump conditions
+	if Input.is_action_just_pressed("jump"):
+		wall_jump()
+
+## WALL MECHANICS
+func check_wall_contact():
+	## Always check for wall state validity
+	#if state in [States.WALL_SLIDE, States.WALL_CLIMB]:
+		#if !is_on_wall():
+			#change_state(States.FALL)
+			#return
+	
+	#if state not in [States.WALL_SLIDE, States.WALL_CLIMB]:
+		if is_on_wall():
+			## Detect which wall we're touching
+			if test_move(transform, Vector2(1, 0)):
+				wall_direction = 1  # Right wall
+			elif test_move(transform, Vector2(-1, 0)):
+				wall_direction = -1  # Left wall
+			
+			## Change to wall slide state
+			if velocity.y > 0:
+				change_state(States.WALL_SLIDE)
+		else:
+			wall_direction = 0
+			#if not is_on_floor():
+				#change_state(States.FALL)
+
+
+func wall_jump():
+	# Reset jump count
+	jump_count = max_jump - 1
+	print(jump_count)
+	
+	# Wall jump based on wall direction
+	if wall_direction == 1:  # Right wall
+		velocity.x = -WALL_JUMP_VELOCITY_X
+	else:  # Left wall
+		velocity.x = WALL_JUMP_VELOCITY_X
+	
+	# Vertical jump velocity
+	velocity.y = WALL_JUMP_VELOCITY_Y
+	
+	# Return to fall state
+	change_state(States.FALL)
+
 
 func get_gravity() -> float:
-	# return jump_gravity if player is jumping
-	if velocity.y < 0.0:
-		return jump_gravity
-	else:
-		# NOTE: if player is not on floor and coyote timer is also gone,
-		# then return fall gravity, else return 0.
-		if !is_on_floor() and can_coyote_jump == false:
-			return fall_gravity
-		return 0.0
+	if state in [States.WALL_SLIDE, States.WALL_CLIMB]:
+		return jump_gravity * 0.5
 	
-	#return jump_gravity if velocity.y < 0.0 else fall_gravity
+	return jump_gravity if velocity.y < 0.0 else fall_gravity
 
-func applay_gravity(delta):
+func apply_gravity(delta):
 	velocity.y += get_gravity() * delta
 
-func grounded():
-	if is_on_floor() or can_coyote_jump:
-		jump_count = max_jump
-		return true
 
-func can_jump():
-	if grounded() or jump_count>0:
-		return true
-	else: 
-		return false
+## Timer function =================
 
+func _on_jump_buffer_timer_timeout():
+	buffered_jump_enabled = false
 
+func _on_coyote_jump_timer_timeout():
+	coyote_jump_enabled = false
 
-func _on_wall_area_body_entered(body):
-	if body is TileMap:
-		walling_area = true
-
-func _on_wall_area_body_exited(body):
-	if body is TileMap:
-		walling_area = false
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-##==============================
-#class_name PlayerJumpState
-#extends State
-#
-#signal to_idle
-#signal to_climb
-#signal to_smash
-#signal to_jump
-#
-## Dependencies
-##@export var player :Player
-#@export var player : Player
-##@export var skin : Node2D
-#@export var vap: AnimationPlayer
-#
-#@onready var smash_timer: Timer = $smash_timer
-#@onready var jump_timer: Timer = $jump_timer
-#
-#var has_pressed = false
-##var con = [to_idle]
-#func _ready() -> void:
-	#set_physics_process(false)
-#
-#func enter_state() -> void:
-	##var tween = create_tween().set_trans(Tween.TRANS_EXPO)
-	##tween.tween_property(skin, "scale",Vector2(0.2,1), 0.3)
-	#vap.play("Yellowstamp")
-	#player.can_smash = true
-	#smash_timer.start()
-	##print("timer_started")
-	#set_physics_process(true)
-	#player.jumps -= 1
-	#jump()
-#
-#func _physics_process(delta: float) -> void:
-	#if !player.is_on_floor() && !has_pressed:
-		#if Input.is_action_just_pressed("jump"):
-			##print("jump_timer_started")
-			#has_pressed = true
-			#jump_timer.start()
-	#player.apply_gravity(delta)
-	#
-	##if Input.is_action_just_released("jump") && player.velocity.y <0:
-		##player.velocity.y = player.jump_velocity/4
-	#
-	#if player.is_on_floor() or player.any_ray_collide():
-		#if has_pressed && !jump_timer.is_stopped():
-			##par.explode()
-			#jump_timer.stop()
-			##print("jumped again")
-			#has_pressed = false
-			#to_jump.emit()
-		#else:
-			#jump_timer.stop()
-			##print("jump timer ended before")
-			#has_pressed = false
-			#to_idle.emit()
-	#
-	#if player.any_ray_collide():
-		#to_climb.emit()
-	#
-	## GROUND BREAK FUNCTIONALITY LMAO
-	#if Input.is_action_pressed("down") && player.can_smash && player.smashin == true:
-		#to_smash.emit()
-	#
-	#if Input.is_action_just_pressed("jump") && player.jumps > 0:
-		##par.explode()
-		#to_jump.emit()
-		##smash_timer.start()
-		##jump()
-		##player.jumps -= 1
-	#var input = Input.get_axis("left", "right")
-	#player.velocity.x = move_toward(player.velocity.x, player.max_speed * input, player.acceleration)
-	##var was_on_floor = player.is_on_floor()
-	#player.move_and_slide()
-	##if !was_on_floor && player.is_on_floor():
-		##par.explode()
-#
-#func jump():
-	#player.velocity.y = player.jump_velocity
-#
-#
-#func exit_state() -> void:
-	##var tween = create_tween().set_trans(Tween.TRANS_EXPO)
-	##tween.tween_property(skin, "scale",Vector2(1,1), 0.3)
-	#set_physics_process(false)
-#
-#
-#func _on_jump_timer_timeout() -> void:
-	#has_pressed = false
+func _on_min_jump_timer_timeout():
+	## check if player has released jump button early
+	if !Input.is_action_pressed("jump"):
+		if velocity.y < -10:
+			velocity.y = -10
