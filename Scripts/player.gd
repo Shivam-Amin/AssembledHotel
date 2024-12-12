@@ -133,7 +133,7 @@ func player_input():
 func default_checks():
 	was_on_floor = true if is_on_floor() else false
 	was_on_wall = $WallCheck.is_colliding()
-	wall_direction = $WallCheck.get_collision_normal(0)
+	#wall_direction = $WallCheck.get_collision_normal(0)
 	print(wall_direction)
 	#if not is_on_floor() or (is_on_floor() and input.y != 0):
 	#check_wall_contact()
@@ -271,6 +271,7 @@ func wall_slide(delta):
 		elif input.y == -1:
 			#while(not is_on_floor()):
 			# TODO: HERE CHANGE STATE TO NEW WALL CLIMB WHICH WILL CLIMB UP THE WALL
+			$WallCheck.force_shapecast_update()
 			print($WallCheckForClimb.get_collision_normal(0))
 			print('==========================')
 			#velocity.x = 400 * -1 * $WallCheckForClimb.get_collision_normal(0).y
@@ -293,7 +294,8 @@ func wall_slide(delta):
 	if is_on_floor() and (input.y == 0 and !$WallCheck.is_colliding()): 
 		change_state(States.IDLE)
 	
-	if input.x != -$WallCheck.get_collision_normal(0).x and input.x != 0:
+	$WallCheck.force_shapecast_update()
+	if input.x != (-1 *$WallCheck.get_collision_normal(0).x) and input.x != 0:
 		print($WallCheck.get_collision_normal(0))
 		print('alkdsfjlk')
 		if input.y == 0 :
@@ -302,8 +304,11 @@ func wall_slide(delta):
 
 ## WALL CLIMB
 func wall_climb(delta):
+	if not $WallCheck.is_colliding():
+		change_state(States.FALL)
 	#print('asldkfjalsdkjflakdsjflkajsdf')
 	# Slow vertical movement while climbing
+	$WallCheck.force_shapecast_update()
 	velocity.y = input.y * (WALL_SLIDE_SPEED)
 	velocity.x = 200 * -$WallCheckForClimb.get_collision_normal(0).x
 	
@@ -313,16 +318,18 @@ func wall_climb(delta):
 		if input.x != 0:
 			change_state(States.RUN)
 		if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
+			jump_count = max_jump - 1
+			jumpped = false
 			change_state(States.JUMP)
 		if $WallCheck.is_colliding() and input.y != 0:
-			#if input.y != 0: 
-			change_state(States.WALL_SLIDE)
+			if input.y != 0: 
+				change_state(States.WALL_SLIDE)
 	
 
 
 func wall_jump():
 	print('WALL JUMP')
-
+	$WallCheck.force_shapecast_update()
 	wall_direction = $WallCheck.get_collision_normal(0)
 	print(wall_direction)
 	print('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
@@ -378,12 +385,3 @@ func any_wall_detect():
 		return -1
 	else:
 		return 0
-
-#func _on_wall_area_body_entered(body):
-	#if body is TileMap:
-		#was_on_wall = true
-#
-#
-#func _on_wall_area_body_exited(body):
-	#if body is TileMap:
-		#was_on_wall = false

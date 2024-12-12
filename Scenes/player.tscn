@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://bckfwpgvnj8hj"]
+[gd_scene load_steps=21 format=3 uid="uid://bckfwpgvnj8hj"]
 
 [ext_resource type="Script" path="res://Scripts/player.gd" id="1_jeuuc"]
 [ext_resource type="Texture2D" uid="uid://6a3lgbfjnwkv" path="res://assets/Sprites/Player.png" id="2_wg4o8"]
@@ -137,9 +137,6 @@ animations = [{
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_0tv0s"]
 size = Vector2(11, 19)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_qe16v"]
-size = Vector2(2.75, 2.75)
-
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bbmab"]
 size = Vector2(9, 18)
 
@@ -192,16 +189,6 @@ target_position = Vector2(10, 0)
 position = Vector2(0, 10)
 target_position = Vector2(-10, 0)
 
-[node name="WallArea" type="Area2D" parent="WallDetect"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="WallDetect/WallArea"]
-position = Vector2(6, 10)
-shape = SubResource("RectangleShape2D_qe16v")
-
-[node name="CollisionShape2D2" type="CollisionShape2D" parent="WallDetect/WallArea"]
-position = Vector2(-6, 10)
-shape = SubResource("RectangleShape2D_qe16v")
-
 [node name="Label" type="Label" parent="."]
 offset_left = -13.0
 offset_top = -32.0
@@ -227,5 +214,3 @@ target_position = Vector2(4, 0)
 [connection signal="timeout" from="Timer/CoyoteJumpTimer" to="." method="_on_coyote_jump_timer_timeout"]
 [connection signal="timeout" from="Timer/JumpBufferTimer" to="." method="_on_jump_buffer_timer_timeout"]
 [connection signal="timeout" from="Timer/MinJumpTimer" to="." method="_on_min_jump_timer_timeout"]
-[connection signal="body_entered" from="WallDetect/WallArea" to="." method="_on_wall_area_body_entered"]
-[connection signal="body_exited" from="WallDetect/WallArea" to="." method="_on_wall_area_body_exited"]
