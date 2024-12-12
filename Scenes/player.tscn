@@ -1,7 +1,53 @@
-[gd_scene load_steps=21 format=3 uid="uid://bckfwpgvnj8hj"]
+[gd_scene load_steps=29 format=3 uid="uid://bckfwpgvnj8hj"]
 
 [ext_resource type="Script" path="res://Scripts/player.gd" id="1_jeuuc"]
 [ext_resource type="Texture2D" uid="uid://6a3lgbfjnwkv" path="res://assets/Sprites/Player.png" id="2_wg4o8"]
+
+[sub_resource type="Animation" id="Animation_4maub"]
+length = 0.001
+
+[sub_resource type="Animation" id="Animation_n0hc8"]
+resource_name = "jump"
+length = 0.1
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_fbnv2"]
+resource_name = "fall"
+length = 0.1
+loop_mode = 1
+
+[sub_resource type="Animation" id="Animation_4g5do"]
+resource_name = "climb"
+length = 0.5
+loop_mode = 1
+step = 0.1667
+
+[sub_resource type="Animation" id="Animation_swn2k"]
+resource_name = "walk"
+length = 0.5
+loop_mode = 1
+step = 0.1667
+
+[sub_resource type="Animation" id="Animation_dc3i4"]
+resource_name = "idle"
+length = 0.5
+loop_mode = 1
+step = 0.25
+
+[sub_resource type="Animation" id="Animation_jsyt7"]
+resource_name = "wallfall"
+length = 0.1
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_t3p0o"]
+_data = {
+"RESET": SubResource("Animation_4maub"),
+"climb": SubResource("Animation_4g5do"),
+"fall": SubResource("Animation_fbnv2"),
+"idle": SubResource("Animation_dc3i4"),
+"jump": SubResource("Animation_n0hc8"),
+"walk": SubResource("Animation_swn2k"),
+"wallfall": SubResource("Animation_jsyt7")
+}
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_pwqmx"]
 atlas = ExtResource("2_wg4o8")
@@ -138,7 +184,7 @@ animations = [{
 size = Vector2(11, 19)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_bbmab"]
-size = Vector2(9, 18)
+size = Vector2(11.5, 18)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ayca7"]
 size = Vector2(10, 1)
@@ -146,7 +192,19 @@ size = Vector2(10, 1)
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_jeuuc")
 
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(1, 0)
+scale = Vector2(2, 2)
+hframes = 12
+frame = 2
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_t3p0o")
+}
+
 [node name="animations" type="AnimatedSprite2D" parent="."]
+visible = false
 sprite_frames = SubResource("SpriteFrames_g8t06")
 animation = &"idel"
 autoplay = "idel"
@@ -198,15 +256,18 @@ theme_override_font_sizes/font_size = 12
 metadata/_edit_lock_ = true
 
 [node name="WallCheck" type="ShapeCast2D" parent="."]
+visible = false
 position = Vector2(-3, 1)
 shape = SubResource("RectangleShape2D_bbmab")
 target_position = Vector2(6, 0)
 
 [node name="FloorCheck" type="RayCast2D" parent="."]
+visible = false
 target_position = Vector2(0, 21)
 metadata/_edit_lock_ = true
 
 [node name="WallCheckForClimb" type="ShapeCast2D" parent="."]
+visible = false
 position = Vector2(-2, 12)
 shape = SubResource("RectangleShape2D_ayca7")
 target_position = Vector2(4, 0)
