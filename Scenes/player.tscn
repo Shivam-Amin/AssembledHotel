@@ -1,4 +1,4 @@
-[gd_scene load_steps=20 format=3 uid="uid://bckfwpgvnj8hj"]
+[gd_scene load_steps=22 format=3 uid="uid://bckfwpgvnj8hj"]
 
 [ext_resource type="Script" path="res://Scripts/player.gd" id="1_jeuuc"]
 [ext_resource type="Texture2D" uid="uid://6a3lgbfjnwkv" path="res://assets/Sprites/Player.png" id="2_wg4o8"]
@@ -138,7 +138,13 @@ animations = [{
 size = Vector2(11, 19)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_qe16v"]
-size = Vector2(2, 2)
+size = Vector2(2.75, 2.75)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_bbmab"]
+size = Vector2(9, 18)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ayca7"]
+size = Vector2(10, 1)
 
 [node name="Player" type="CharacterBody2D"]
 script = ExtResource("1_jeuuc")
@@ -148,13 +154,16 @@ sprite_frames = SubResource("SpriteFrames_g8t06")
 animation = &"idel"
 autoplay = "idel"
 frame_progress = 0.557897
+metadata/_edit_lock_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(0, 0.5)
 shape = SubResource("RectangleShape2D_0tv0s")
+metadata/_edit_lock_ = true
 
 [node name="Camera2D" type="Camera2D" parent="."]
 zoom = Vector2(4, 4)
+metadata/_edit_lock_ = true
 
 [node name="Timer" type="Node" parent="."]
 
@@ -171,7 +180,9 @@ wait_time = 0.15
 one_shot = true
 
 [node name="WallDetect" type="Node2D" parent="."]
+visible = false
 position = Vector2(0, -4)
+metadata/_edit_lock_ = true
 
 [node name="WallDetect1" type="RayCast2D" parent="WallDetect"]
 position = Vector2(0, 10)
@@ -179,16 +190,16 @@ target_position = Vector2(10, 0)
 
 [node name="WallDetect2" type="RayCast2D" parent="WallDetect"]
 position = Vector2(0, 10)
-target_position = Vector2(-9, 0)
+target_position = Vector2(-10, 0)
 
 [node name="WallArea" type="Area2D" parent="WallDetect"]
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="WallDetect/WallArea"]
-position = Vector2(8, 10)
+position = Vector2(6, 10)
 shape = SubResource("RectangleShape2D_qe16v")
 
 [node name="CollisionShape2D2" type="CollisionShape2D" parent="WallDetect/WallArea"]
-position = Vector2(-7, 10)
+position = Vector2(-6, 10)
 shape = SubResource("RectangleShape2D_qe16v")
 
 [node name="Label" type="Label" parent="."]
@@ -197,6 +208,21 @@ offset_top = -32.0
 offset_right = 27.0
 offset_bottom = -1.0
 theme_override_font_sizes/font_size = 12
+metadata/_edit_lock_ = true
+
+[node name="WallCheck" type="ShapeCast2D" parent="."]
+position = Vector2(-3, 1)
+shape = SubResource("RectangleShape2D_bbmab")
+target_position = Vector2(6, 0)
+
+[node name="FloorCheck" type="RayCast2D" parent="."]
+target_position = Vector2(0, 21)
+metadata/_edit_lock_ = true
+
+[node name="WallCheckForClimb" type="ShapeCast2D" parent="."]
+position = Vector2(-2, 12)
+shape = SubResource("RectangleShape2D_ayca7")
+target_position = Vector2(4, 0)
 
 [connection signal="timeout" from="Timer/CoyoteJumpTimer" to="." method="_on_coyote_jump_timer_timeout"]
 [connection signal="timeout" from="Timer/JumpBufferTimer" to="." method="_on_jump_buffer_timer_timeout"]
