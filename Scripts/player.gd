@@ -20,7 +20,7 @@ var was_on_floor: bool = true   # to detect if player just slide out of floor at
 @export var friction: float = 1400
 
 ## JUMP SECTION:
-@export var max_jump: int = 2
+@export var max_jump: int = 1
 var jump_count : int = max_jump
 var jump_pressed: bool = false
 @onready var jumpped = false
@@ -75,46 +75,36 @@ func _process(delta):
 		States.IDLE:
 			label.text = "IDLE"
 			idel(delta)
+			sprite.flip_v = false
+			pap.play("idle")
 		States.RUN:
 			label.text = "RUN"
 			run(delta)
+			sprite.flip_v = false
+			pap.play("walk")
 		States.JUMP:
 			label.text = "JUMP"
 			jump(delta)
+			sprite.flip_v = false
+			pap.play("jump")
 		States.FALL:
 			label.text = "FALL"
 			fall(delta)
+			sprite.flip_v = false
+			pap.play("fall")
 		States.WALL_SLIDE:
 			label.text = "WALL_SLIDE"
 			wall_slide(delta)
 		States.WALL_CLIMB:
 			label.text = "WALL_CLIMB"
 			wall_climb(delta)
+			sprite.flip_v = false
 	
 	#player_input()
 	default_checks()
 	move_and_slide()
 
 func _physics_process(delta):
-	#match state:
-		#States.IDLE:
-			#label.text = "IDLE"
-			#idel()
-		#States.RUN:
-			#label.text = "RUN"
-			#run()
-		#States.JUMP:
-			#label.text = "JUMP"
-			#jump()
-		#States.FALL:
-			#label.text = "FALL"
-			#fall()
-		#States.WALL_SLIDE:
-			#label.text = "WALL_SLIDE"
-			#wall_slide()
-		#States.WALL_CLIMB:
-			#label.text = "WALL_CLIMB"
-			#wall_climb()
 	
 	apply_gravity(delta)
 	player_input()
@@ -125,21 +115,28 @@ func _physics_process(delta):
 ## HELPER FUNCTIONS:
 func change_state(newState: States) -> void:
 	print("old:", state)
+	state = newState
+	
 	match state:
 		States.IDLE:
 			sprite.flip_v = false
+			pap.play("idle")
 		States.RUN:
 			sprite.flip_v = false
+			pap.play("walk")
 		States.JUMP:
 			sprite.flip_v = false
+			pap.play("jump")
 		States.FALL:
 			sprite.flip_v = false
+			pap.play("fall")
 		States.WALL_SLIDE:
 			pass
 		States.WALL_CLIMB:
-			pass
+			sprite.flip_v = false
+	
 	print("new:",state)
-	state = newState
+	
 
 func player_input():
 	input = Input.get_vector("ui_left", "ui_right", "ui_up", "ui_down")
@@ -158,7 +155,7 @@ func default_checks():
 ## =========== STATES =============
 ## IDEL
 func idel(delta):
-	pap.play("idle")
+	
 	velocity.x = move_toward(velocity.x, 0, friction)
 	
 	if is_on_floor():
@@ -170,13 +167,17 @@ func idel(delta):
 		change_state(States.RUN)
 	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
 		change_state(States.JUMP)
-	if $WallCheck.is_colliding() and input.y != 0:
+	if $WallCheck.is_colliding() and input.y < 0:
 		#if input.y != 0: 
 		change_state(States.WALL_SLIDE)
 
 ## RUN
 func run(delta):
-	pap.play("walk")
+	#pap.play("walk")
+	if input.x > 0:
+		sprite.flip_h = false
+	else:
+		sprite.flip_h = true
 	velocity.x = move_toward(velocity.x, MAX_SPEED * input.x, acceleration)
 	
 	if is_on_floor():
@@ -207,7 +208,7 @@ func can_jump():
 	return false
 	
 func jump(delta):
-	pap.play("jump")
+	#pap.play("jump")
 	if !jumpped and can_jump():
 		print(coyote_jump_enabled)
 		min_jump_timer.start()
@@ -259,7 +260,7 @@ func jump(delta):
 
 ## FALL
 func fall(delta):
-	pap.play("fall")
+	#pap.play("fall")
 	if is_on_floor():
 		change_state(States.IDLE)
 	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
@@ -276,39 +277,45 @@ func fall(delta):
 
 ## WALL
 func wall_slide(delta):
-	#sprite.flip_v = true
+	$WallCheck.force_shapecast_update()
+	if $WallCheck.is_colliding():
+		sprite.flip_h = false if $WallCheck.get_collision_normal(0).x == -1 else true
+
+	
 	if not $WallCheck.is_colliding():
-		sprite.flip_v = false
 		change_state(States.FALL)
+	
 	if input.y == 0:
 		velocity.y = min(velocity.y, WALL_SLIDE_SPEED)
+		if is_on_floor():
+			change_state(States.IDLE)
+		else:
+			sprite.flip_v = false
 	else:
 		velocity.y = input.y * (WALL_SLIDE_SPEED * 0.5)
+		if is_on_floor():
+			change_state(States.IDLE)
 	
 	#if was_on_wall and not is_on_floor() and (!any_wall_detect()):
 	if !$WallCheck.is_colliding() and not is_on_floor():
 		if input.y == 1 or input.y == 0:
 			print('JABBAAAAA SLIDE')
 			change_state(States.FALL)
-		elif input.y == -1:
-			#while(not is_on_floor()):
-			# TODO: HERE CHANGE STATE TO NEW WALL CLIMB WHICH WILL CLIMB UP THE WALL
-			#velocity.x = 400 * -1 * $WallCheckForClimb.get_collision_normal(0).y
-			#velocity.y += 400
-			#change_state(States.JUMP)
+		
+		# if wall is not colliding and player is pressing up arrow means, player is at the top of wall
+		elif input.y == -1:  
 			sprite.flip_v = false
 			change_state(States.WALL_CLIMB)
 			print('yeeeee')
 	
-	if velocity.y < 0:
-		sprite.flip_v = false
+	if input.y == 0:
+		pap.play("wallfall")
+	else:
 		pap.play("climb")
-	elif input.y > 0:
-		sprite.flip_v = true
-		pap.play("climb")
-	if is_on_floor():
-		pap.play("idle")
-		sprite.flip_v = false
+		if input.y > 0:
+			sprite.flip_v = true
+		else:
+			sprite.flip_v = false
 	
 	if Input.is_action_just_pressed("jump"):
 		if not is_on_floor() and $WallCheck.is_colliding():
@@ -338,16 +345,19 @@ func wall_slide(delta):
 				
 
 ## WALL CLIMB
+# wall climb is, only one frame thing no need to play animation
 func wall_climb(delta):
+	#sprite.flip_v = false
 	if not $WallCheck.is_colliding():
 		change_state(States.FALL)
-	#print('asldkfjalsdkjflakdsjflkajsdf')
-	# Slow vertical movement while climbing
 	
 	$WallCheckForClimb.force_shapecast_update()
 	velocity.y = input.y * (WALL_SLIDE_SPEED)
 	if $WallCheckForClimb.is_colliding():
-		velocity.x = 200 * -$WallCheckForClimb.get_collision_normal(0).x
+		if $WallCheckForClimb.get_collision_normal(0).x == -1:
+			velocity.x = 500
+		else:
+			velocity.x = -500
 	
 	if not $WallCheck.is_colliding():
 		if input.x == 0:
