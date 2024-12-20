@@ -20,7 +20,7 @@ var was_on_floor: bool = true   # to detect if player just slide out of floor at
 @export var friction: float = 1400
 
 ## JUMP SECTION:
-@export var max_jump: int = 1
+@export var max_jump: int = 2
 var jump_count : int = max_jump
 var jump_pressed: bool = false
 @onready var jumpped = false
@@ -147,7 +147,7 @@ func default_checks():
 	was_on_floor = true if is_on_floor() else false
 	was_on_wall = $WallCheck.is_colliding()
 	#wall_direction = $WallCheck.get_collision_normal(0)
-	print(wall_direction)
+	#print(wall_direction)
 	#if not is_on_floor() or (is_on_floor() and input.y != 0):
 	#check_wall_contact()
 
