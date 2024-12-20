@@ -303,10 +303,6 @@ metadata/_edit_lock_ = true
 position = Vector2(0, 0.5)
 shape = SubResource("RectangleShape2D_0tv0s")
 
-[node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(4, 4)
-metadata/_edit_lock_ = true
-
 [node name="Timer" type="Node" parent="."]
 
 [node name="CoyoteJumpTimer" type="Timer" parent="Timer"]

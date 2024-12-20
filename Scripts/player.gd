@@ -103,18 +103,23 @@ func _process(delta):
 	#player_input()
 	default_checks()
 	move_and_slide()
-
+#var jumppoints = []
 func _physics_process(delta):
-	
+	#if !is_on_floor():
+		#jumppoints.append(global_position)
 	apply_gravity(delta)
 	player_input()
 	#default_checks()
 	#move_and_slide()
 
+#func _notification(what):
+	#if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		#print(jumppoints)
+		#get_tree().quit()
 
 ## HELPER FUNCTIONS:
 func change_state(newState: States) -> void:
-	print("old:", state)
+	#print("old:", state)
 	state = newState
 	
 	match state:
@@ -135,7 +140,7 @@ func change_state(newState: States) -> void:
 		States.WALL_CLIMB:
 			sprite.flip_v = false
 	
-	print("new:",state)
+	#print("new:",state)
 	
 
 func player_input():
@@ -299,7 +304,7 @@ func wall_slide(delta):
 	#if was_on_wall and not is_on_floor() and (!any_wall_detect()):
 	if !$WallCheck.is_colliding() and not is_on_floor():
 		if input.y == 1 or input.y == 0:
-			print('JABBAAAAA SLIDE')
+			#print('JABBAAAAA SLIDE')
 			change_state(States.FALL)
 		
 		# if wall is not colliding and player is pressing up arrow means, player is at the top of wall
@@ -319,11 +324,11 @@ func wall_slide(delta):
 	
 	if Input.is_action_just_pressed("jump"):
 		if not is_on_floor() and $WallCheck.is_colliding():
-			print('WALLL JUMP')
+			#print('WALLL JUMP')
 			sprite.flip_v = false
 			wall_jump()
 		else: 
-			print('alsdjflakdsjflaksdjflksdajflskfjlskfjalskdjflkjdflafkjd')
+			#print('alsdjflakdsjflaksdjflksdajflskfjlskfjalskdjflkjdflafkjd')
 			jump_count = max_jump - 1
 			jumpped = false
 			sprite.flip_v = false
@@ -336,8 +341,8 @@ func wall_slide(delta):
 	$WallCheck.force_shapecast_update()
 	if input.x != 0:
 		if $WallCheck.is_colliding() and input.x != (-1 *$WallCheck.get_collision_normal(0).x):
-			print($WallCheck.get_collision_normal(0))
-			print('alkdsfjlk')
+			#print($WallCheck.get_collision_normal(0))
+			#print('alkdsfjlk')
 			if input.y == 0 :
 				velocity.x = move_toward(velocity.x, MAX_SPEED * input.x, acceleration)
 				sprite.flip_v = false

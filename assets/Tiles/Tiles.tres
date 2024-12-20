@@ -1,4 +1,4 @@
-[gd_resource type="TileSet" load_steps=91 format=3 uid="uid://ctnnee4kbx7fe"]
+[gd_resource type="TileSet" load_steps=92 format=3 uid="uid://ctnnee4kbx7fe"]
 
 [ext_resource type="Texture2D" uid="uid://d0s7g788c0u1i" path="res://assets/Tiles/Tiles.png" id="1"]
 
@@ -4009,6 +4009,10 @@ texture_region_size = Vector2i(8, 8)
 0:0/7/physics_layer_0/angular_velocity = 0.0
 0:0/7/physics_layer_0/polygon_0/points = PackedVector2Array(-4, -4, 4, -4, 4, 4, -4, 4)
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_xyuf2"]
+texture = ExtResource("1")
+texture_region_size = Vector2i(8, 8)
+
 [resource]
 tile_size = Vector2i(8, 8)
 physics_layer_0/collision_layer = 1
@@ -4101,3 +4105,4 @@ sources/85 = SubResource("TileSetAtlasSource_nhnub")
 sources/86 = SubResource("TileSetAtlasSource_52d3l")
 sources/87 = SubResource("TileSetAtlasSource_pppn5")
 sources/88 = SubResource("TileSetAtlasSource_l6mss")
+sources/91 = SubResource("TileSetAtlasSource_xyuf2")
