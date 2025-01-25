@@ -197,6 +197,7 @@ func run(delta):
 	if input.x == 0:
 		change_state(States.IDLE)
 	if velocity.y > 0 and not is_on_floor() and not coyote_jump_enabled:
+		jump_count = max_jump-1
 		change_state(States.FALL)
 	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
 		change_state(States.JUMP)
@@ -252,6 +253,10 @@ func jump(delta):
 	
 	if Input.is_action_pressed("ui_left") or Input.is_action_pressed("ui_right"):
 		velocity.x = move_toward(velocity.x, MAX_SPEED * input.x, acceleration)
+	else:
+		print('sssssssssssss')
+		if input.x == 0:
+			velocity.x = move_toward(velocity.x, 0, 10)
 	
 	if not is_on_floor() and $WallCheck.is_colliding():
 		#if input.y != 0:
@@ -266,6 +271,9 @@ func jump(delta):
 ## FALL
 func fall(delta):
 	#pap.play("fall")
+	#if Input.is_action_just_pressed("jump") && jump_count>0:
+		#change_state(States.JUMP)
+		
 	if is_on_floor():
 		change_state(States.IDLE)
 	if Input.is_action_just_pressed("jump") or (buffered_jump_enabled and is_on_floor()):
@@ -274,6 +282,10 @@ func fall(delta):
 		change_state(States.JUMP)
 	if input.x != 0:
 		velocity.x = move_toward(velocity.x, MAX_SPEED * input.x, acceleration)
+	else:
+		print('sssssssssssss')
+		if input.x == 0:
+			velocity.x = move_toward(velocity.x, 0, 10)
 	if not is_on_floor() and $WallCheck.is_colliding():
 		#if input.y != 0:
 			#change_state(States.WALL_CLIMB)

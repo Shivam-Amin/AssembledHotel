@@ -12,6 +12,7 @@ layer_0/tile_data = PackedInt32Array(917445, 7, 0, 917446, 7, 0, 917447, 7, 0, 9
 
 [node name="Player" parent="." instance=ExtResource("2_km0d0")]
 position = Vector2(-903, 196)
+acceleration = 10.0
 
 [node name="ScreenCheck" parent="." instance=ExtResource("3_maeql")]
 
