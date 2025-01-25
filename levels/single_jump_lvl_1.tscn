@@ -7,7 +7,7 @@
 
 [sub_resource type="Curve2D" id="Curve2D_wb1kw"]
 _data = {
-"points": PackedVector2Array(0, 0, 0, 0, 279, -92, 0, 0, 0, 0, 278, 51)
+"points": PackedVector2Array(0, 0, 0, 0, 278, -209, 0, 0, 0, 0, 278, 51)
 }
 point_count = 2
 
@@ -20,15 +20,16 @@ layer_0/tile_data = PackedInt32Array(0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0
 [node name="Saw" parent="." instance=ExtResource("4_rui86")]
 position = Vector2(-923, 26)
 
-[node name="Path2D" parent="Saw" index="1"]
+[node name="Path2D" parent="Saw" index="0"]
 curve = SubResource("Curve2D_wb1kw")
 
 [node name="PathFollow2D" parent="Saw/Path2D" index="0"]
-position = Vector2(279, -92)
-rotation = 1.57779
+position = Vector2(278, -209)
+rotation = 1.5708
 
 [node name="Player" parent="." instance=ExtResource("2_npsci")]
 position = Vector2(-745, -66)
+scale = Vector2(0.5, 0.5)
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
@@ -54,18 +55,28 @@ grow_vertical = 2
 
 [node name="ColorRect" type="ColorRect" parent="Control"]
 visible = false
-offset_right = 1920.0
-offset_bottom = 360.0
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = -245.0
+offset_right = 960.0
+offset_bottom = 245.0
+grow_horizontal = 2
+grow_vertical = 2
 color = Color(1, 1, 1, 0.392157)
 
 [node name="Control" type="Control" parent="Control"]
 anchors_preset = 0
-offset_left = 2.0
-offset_top = 277.0
-offset_right = 42.0
-offset_bottom = 317.0
+offset_top = 295.0
+offset_right = 40.0
+offset_bottom = 335.0
 
 [node name="ColorRect9" type="ColorRect" parent="Control/Control"]
+layout_mode = 0
 offset_right = 640.0
 offset_bottom = 490.0
 color = Color(1, 1, 1, 0.392157)
