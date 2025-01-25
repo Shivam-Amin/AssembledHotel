@@ -1,8 +1,9 @@
-[gd_scene load_steps=30 format=3 uid="uid://bckfwpgvnj8hj"]
+[gd_scene load_steps=31 format=3 uid="uid://bckfwpgvnj8hj"]
 
 [ext_resource type="Script" path="res://Scripts/player.gd" id="1_jeuuc"]
 [ext_resource type="Texture2D" uid="uid://crej8aje4pu8j" path="res://assets/player.png" id="2_57dm6"]
 [ext_resource type="Texture2D" uid="uid://6a3lgbfjnwkv" path="res://assets/Sprites/Player.png" id="2_wg4o8"]
+[ext_resource type="Texture2D" uid="uid://cvefjycr55vn5" path="res://assets/Sprites/finalPlayer.png" id="4_qull1"]
 
 [sub_resource type="Animation" id="Animation_4maub"]
 length = 0.001
@@ -279,6 +280,7 @@ size = Vector2(10, 1)
 script = ExtResource("1_jeuuc")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
+visible = false
 scale = Vector2(2, 2)
 texture = ExtResource("2_57dm6")
 hframes = 12
@@ -353,6 +355,15 @@ visible = false
 position = Vector2(-2, 12)
 shape = SubResource("RectangleShape2D_ayca7")
 target_position = Vector2(4, 0)
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+position = Vector2(0, -2)
+texture = ExtResource("4_qull1")
+hframes = 8
+vframes = 6
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(3, 3)
 
 [connection signal="timeout" from="Timer/CoyoteJumpTimer" to="." method="_on_coyote_jump_timer_timeout"]
 [connection signal="timeout" from="Timer/JumpBufferTimer" to="." method="_on_jump_buffer_timer_timeout"]

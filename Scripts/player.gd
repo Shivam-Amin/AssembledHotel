@@ -215,38 +215,38 @@ func can_jump():
 func jump(delta):
 	#pap.play("jump")
 	if !jumpped and can_jump():
-		print(coyote_jump_enabled)
+		#print(coyote_jump_enabled)
 		min_jump_timer.start()
 		jumpped = true
 		jump_count -= 1
 		velocity.y = jump_velocity 
-		print('aldkfjlkjlkj')
-		print(jump_count)
+		#print('aldkfjlkjlkj')
+		#print(jump_count)
 		## if (coyote_jump_enabled): print('COYOTE JUMP')
 	
 	else:
 		print(jump_count)
 		if (not buffered_jump_enabled and not is_on_floor() and jump_count > 0 and not jump_buffer_checked):
-			print('JUMP BUFFER ENABLED')
+			#print('JUMP BUFFER ENABLED')
 			buffered_jump_enabled = true
 			jump_buffer_checked = true
 			jump_buffer_timer.start()
 		if (is_on_floor()):
-			print('first jump')
+			#print('first jump')
 			change_state(States.IDLE)
 		
 	#if (is_on_floor() and jump_count == max_jump) or (not is_on_floor() and was_on_floor):
 	if can_jump():
 		if Input.is_action_just_pressed("jump"):
-			print('AGAIN PRESSED JUMP.......')
+			#print('AGAIN PRESSED JUMP.......')
 			jumpped = false
 			change_state(States.JUMP)
 		elif velocity.y >= 0 and (not is_on_floor() and not coyote_jump_enabled) and (!any_wall_detect()):
-			print('chaning to fall')
+			#print('chaning to fall')
 			change_state(States.FALL)
 	
 	if velocity.y >= 0 and (not is_on_floor() and not coyote_jump_enabled) and (!any_wall_detect()):
-		print('chaning to fall')
+		#print('chaning to fall')
 		change_state(States.FALL)
 	
 	
@@ -311,7 +311,7 @@ func wall_slide(delta):
 		elif input.y == -1:  
 			sprite.flip_v = false
 			change_state(States.WALL_CLIMB)
-			print('yeeeee')
+			#print('yeeeee')
 	
 	if input.y == 0:
 		pap.play("wallfall")
@@ -380,12 +380,12 @@ func wall_climb(delta):
 
 
 func wall_jump():
-	print('WALL JUMP')
+	#print('WALL JUMP')
 	$WallCheck.force_shapecast_update()
 	if $WallCheck.is_colliding():
 		wall_direction = $WallCheck.get_collision_normal(0)
-		print(wall_direction)
-		print('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
+		#print(wall_direction)
+		#print('~~~~~~~~~~~~~~~~~~~~~~~~~~~')
 	else :
 		wall_direction = Vector2.ZERO
 	
