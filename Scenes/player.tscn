@@ -362,9 +362,6 @@ texture = ExtResource("4_qull1")
 hframes = 8
 vframes = 6
 
-[node name="Camera2D" type="Camera2D" parent="."]
-zoom = Vector2(3, 3)
-
 [connection signal="timeout" from="Timer/CoyoteJumpTimer" to="." method="_on_coyote_jump_timer_timeout"]
 [connection signal="timeout" from="Timer/JumpBufferTimer" to="." method="_on_jump_buffer_timer_timeout"]
 [connection signal="timeout" from="Timer/MinJumpTimer" to="." method="_on_min_jump_timer_timeout"]

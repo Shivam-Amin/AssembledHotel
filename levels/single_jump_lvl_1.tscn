@@ -1,8 +1,9 @@
-[gd_scene load_steps=6 format=3 uid="uid://c216tbd0nupwv"]
+[gd_scene load_steps=7 format=3 uid="uid://c216tbd0nupwv"]
 
 [ext_resource type="PackedScene" uid="uid://nhaj2c5xouk1" path="res://Scenes/tile_map.tscn" id="1_4tx2y"]
 [ext_resource type="PackedScene" uid="uid://bckfwpgvnj8hj" path="res://Scenes/player.tscn" id="2_npsci"]
 [ext_resource type="Texture2D" uid="uid://b8oelwp48yt7c" path="res://debug/jump.png" id="3_dh5mk"]
+[ext_resource type="PackedScene" uid="uid://cg3yll0i7ff2h" path="res://debug/screen_check.tscn" id="4_5klx8"]
 [ext_resource type="PackedScene" uid="uid://b0a77yuyv4r4q" path="res://Scenes/saw.tscn" id="4_rui86"]
 
 [sub_resource type="Curve2D" id="Curve2D_wb1kw"]
@@ -13,12 +14,8 @@ point_count = 2
 
 [node name="SingleJumpLvl1" type="Node2D"]
 
-[node name="TileMap" parent="." instance=ExtResource("1_4tx2y")]
-position = Vector2(-939, 24)
-layer_0/tile_data = PackedInt32Array(0, 0, 0, 1, 0, 0, 2, 0, 0, 3, 0, 0, 4, 0, 0, 5, 0, 0, 6, 0, 0, 7, 0, 0, 8, 0, 0, 9, 0, 0, 10, 0, 0, 11, 0, 0, 12, 0, 0, 13, 0, 0, 14, 0, 0, 15, 0, 0, 16, 0, 0, 17, 0, 0, 18, 0, 0, 19, 0, 0, 20, 0, 0, 21, 0, 0, 22, 0, 0, 23, 0, 0, 24, 0, 0, 25, 0, 0, 26, 0, 0, 27, 0, 0, 28, 0, 0, 29, 0, 0, 30, 0, 0, 31, 0, 0, 32, 0, 0, 33, 0, 0, 34, 0, 0, 35, 0, 0, 36, 0, 0, 37, 0, 0, 38, 0, 0, 39, 0, 0, 40, 0, 0, 41, 0, 0, 42, 0, 0, 43, 0, 0, 44, 0, 0, 45, 0, 0, 46, 0, 0, 47, 0, 0, 48, 0, 0, 49, 0, 0, 50, 0, 0, 51, 0, 0, 52, 0, 0, 53, 0, 0, 54, 0, 0, 55, 0, 0, 56, 0, 0, 57, 0, 0, 58, 0, 0, 59, 0, 0, 60, 0, 0, 61, 0, 0, 62, 0, 0, 63, 0, 0, 64, 0, 0, 65, 0, 0, 66, 0, 0, -786391, 0, 0, -786389, 0, 0, -786388, 0, 0, -786387, 0, 0, -786386, 0, 0, -786390, 0, 0, -786385, 0, 0, -786384, 0, 0, -786383, 0, 0, -786382, 0, 0, -786381, 0, 0, -786380, 0, 0, -786379, 0, 0, -786378, 0, 0, -786377, 0, 0, -786376, 0, 0, -786355, 0, 0, -786354, 0, 0, -786353, 0, 0, -786352, 0, 0, -786351, 0, 0, -786350, 0, 0, -786349, 0, 0, -786348, 0, 0, -786347, 0, 0, -786346, 0, 0)
-
 [node name="Saw" parent="." instance=ExtResource("4_rui86")]
-position = Vector2(-923, 26)
+position = Vector2(-917, 159)
 
 [node name="Path2D" parent="Saw" index="0"]
 curve = SubResource("Curve2D_wb1kw")
@@ -28,81 +25,19 @@ position = Vector2(278, -209)
 rotation = 1.5708
 
 [node name="Player" parent="." instance=ExtResource("2_npsci")]
-position = Vector2(-745, -66)
-scale = Vector2(0.5, 0.5)
+position = Vector2(-895, 178)
 
 [node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(-637, -43)
 
 [node name="Jump" type="Sprite2D" parent="."]
-visible = false
-position = Vector2(209, -81)
+position = Vector2(-696, 15)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("3_dh5mk")
 
-[node name="Control" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -960.0
-offset_top = -540.0
-offset_right = 960.0
-offset_bottom = 540.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="ScreenCheck" parent="." instance=ExtResource("4_5klx8")]
 
-[node name="ColorRect" type="ColorRect" parent="Control"]
-visible = false
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -960.0
-offset_top = -245.0
-offset_right = 960.0
-offset_bottom = 245.0
-grow_horizontal = 2
-grow_vertical = 2
-color = Color(1, 1, 1, 0.392157)
-
-[node name="Control" type="Control" parent="Control"]
-anchors_preset = 0
-offset_top = 295.0
-offset_right = 40.0
-offset_bottom = 335.0
-
-[node name="ColorRect9" type="ColorRect" parent="Control/Control"]
-layout_mode = 0
-offset_right = 640.0
-offset_bottom = 490.0
-color = Color(1, 1, 1, 0.392157)
-
-[node name="ColorRect7" type="ColorRect" parent="Control/Control"]
-visible = false
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = 1240.0
-offset_right = 1880.0
-offset_bottom = 490.0
-grow_horizontal = 0
-color = Color(1, 1, 1, 0.392157)
-
-[node name="ColorRect8" type="ColorRect" parent="Control/Control"]
-visible = false
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = 620.0
-offset_right = 1260.0
-offset_bottom = 490.0
-grow_horizontal = 2
-color = Color(1, 1, 1, 0.392157)
+[node name="TileMap" parent="." instance=ExtResource("1_4tx2y")]
+layer_0/tile_data = PackedInt32Array(851910, 7, 0, 851911, 7, 0, 851912, 7, 0, 851913, 7, 0, 851909, 7, 0, 851914, 7, 0, 655310, 7, 0, 655311, 7, 0, 655312, 7, 0, 655313, 7, 0, 655314, 7, 0, 655315, 7, 0, 458693, 7, 0, 458694, 7, 0, 458695, 7, 0, 458696, 7, 0, 458697, 7, 0, 458698, 7, 0, 262094, 7, 0, 262095, 7, 0, 262096, 7, 0, 262097, 7, 0, 262098, 7, 0, 262099, 7, 0, 262100, 7, 0, 262108, 7, 0, 655324, 7, 0, 262109, 7, 0, 655325, 7, 0, 262110, 7, 0, 655326, 7, 0, 262111, 7, 0, 655327, 7, 0, 458725, 7, 0, 851941, 7, 0, 458726, 7, 0, 851942, 7, 0, 458727, 7, 0, 851943, 7, 0, 458728, 7, 0, 851944, 7, 0, 262112, 7, 0, 655328, 7, 0, 262113, 7, 0, 655329, 7, 0, 458729, 7, 0, 851945, 7, 0, 458730, 7, 0, 851946, 7, 0, 262107, 7, 0)
 
 [editable path="Saw"]
